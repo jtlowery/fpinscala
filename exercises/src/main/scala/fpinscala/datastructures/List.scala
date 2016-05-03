@@ -131,6 +131,31 @@ object List { // `List` companion object. Contains functions for creating and wo
   def reverse[A](l: List[A]): List[A] =
     foldLeft(l, List[A]())((h, t) => Cons(t, h))
 
+  // exercise 3.13 -- foldLeft in terms of foldRight
+  /*def foldLeftViafoldRight[A,B](l: List[A], z: B)(f: (B, A) => B): B =
+  */
+  //def foldRightViaFoldLeft[A,B](l: List[A], z: B)(f: (A, B) => B): B =
+  //  foldLeft(reverse(l, z)
+
+  /*def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
+    as match {
+      case Nil => z
+      case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+    }*/
+
+  // exercise 3.14 append in terms of foldRight or foldLeft
+  def appendFoldRight[A](a1: List[A], a2: List[A]): List[A] =
+    foldRight(a1, a2)((h, t) => Cons(h, t))
+  def appendFoldLeft[A](a1: List[A], a2: List[A]): List[A] =
+    foldLeft(reverse(a1), a2)((h, t) => Cons(t, h))
+
+  // exercise 3.15 -- concatenate a list of lists into a single list
+  //def concatLists[A](l: List[List[A]]): List[A] =
+
+  // exercise 3.16 -- add one to each element of an int list
+  //def addOne[Int](l: List[Int]): List[Int] =
+
+
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 
 }
