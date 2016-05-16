@@ -131,17 +131,13 @@ object List { // `List` companion object. Contains functions for creating and wo
   def reverse[A](l: List[A]): List[A] =
     foldLeft(l, List[A]())((h, t) => Cons(t, h))
 
-  // exercise 3.13 -- foldLeft in terms of foldRight
-  /*def foldLeftViafoldRight[A,B](l: List[A], z: B)(f: (B, A) => B): B =
-  */
-  //def foldRightViaFoldLeft[A,B](l: List[A], z: B)(f: (A, B) => B): B =
-  //  foldLeft(reverse(l, z)
-
-  /*def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
-    as match {
-      case Nil => z
-      case Cons(x, xs) => f(x, foldRight(xs, z)(f))
-    }*/
+  // exercise 3.13 -- foldLeft in terms of foldRight and vice versa
+  def foldRightViaFoldLeft[A,B](l: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(reverse(l), z)((b, a) => f(a, b))
+  def foldRightViaFoldLeftNoReverse[A,B](l: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(l, (b: B) => b)((g, a) => b => g(f(a, b)))(z)
+  def foldLeftViafoldRight[A,B](l: List[A], z: B)(f: (B, A) => B): B =
+    foldRight(l, (b: B) => b)((a, g) => b => g(f(b, a)))(z)
 
   // exercise 3.14 append in terms of foldRight or foldLeft
   def appendFoldRight[A](a1: List[A], a2: List[A]): List[A] =
@@ -153,9 +149,26 @@ object List { // `List` companion object. Contains functions for creating and wo
   //def concatLists[A](l: List[List[A]]): List[A] =
 
   // exercise 3.16 -- add one to each element of an int list
-  //def addOne[Int](l: List[Int]): List[Int] =
+  def addOne(l: List[Int]): List[Int] =
+    foldRight(l, Nil: List[Int])((h, t) => Cons(h + 1, t))
+  def addOnePatternMatching(l: List[Int]): List[Int] =
+    l match {
+      case Nil => Nil
+      case Cons(h, t) => Cons(h + 1, addOnePatternMatching(t))
+    }
 
+  // exercise 3.17 -- turns each value in a List[Double] into a string
+  def doubleListToStringList(l: List[Double]): List[String] =
+    foldRight(l, Nil: List[String])((h, t) => Cons(h.toString, t))
+  def doubleListToStringListPM(l: List[Double]): List[String] =
+    l match {
+      case Nil => Nil
+      case Cons(h, t) => Cons(h.toString, doubleListToStringListPM(t))
+    }
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+  // exercise 3.18 -- generalizes modifying each element in a list while
+  // maintaing the structure of the list
+  //def map[A, B](l: List[A])(f: A => B): List[B] =
+
 
 }
