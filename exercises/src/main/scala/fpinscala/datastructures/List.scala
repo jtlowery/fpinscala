@@ -132,6 +132,7 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldLeft(l, List[A]())((h, t) => Cons(t, h))
 
   // exercise 3.13 -- foldLeft in terms of foldRight and vice versa
+  // TODO revisit this
   def foldRightViaFoldLeft[A,B](l: List[A], z: B)(f: (A, B) => B): B =
     foldLeft(reverse(l), z)((b, a) => f(a, b))
   def foldRightViaFoldLeftNoReverse[A,B](l: List[A], z: B)(f: (A, B) => B): B =
@@ -146,7 +147,8 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldLeft(reverse(a1), a2)((h, t) => Cons(t, h))
 
   // exercise 3.15 -- concatenate a list of lists into a single list
-  //def concatLists[A](l: List[List[A]]): List[A] =
+  def concatLists[A](l: List[List[A]]): List[A] =
+    foldRight(l, Nil: List[A])(append)
 
   // exercise 3.16 -- add one to each element of an int list
   def addOne(l: List[Int]): List[Int] =
@@ -167,8 +169,17 @@ object List { // `List` companion object. Contains functions for creating and wo
     }
 
   // exercise 3.18 -- generalizes modifying each element in a list while
-  // maintaing the structure of the list
-  //def map[A, B](l: List[A])(f: A => B): List[B] =
+  //                  maintaing the structure of the list
+  def map[A, B](l: List[A])(f: A => B): List[B] =
+    foldRight(l, Nil: List[B])((h, t) => Cons(f(h), t))
+  def mapViaFoldLeft[A, B](l: List[A])(f: A => B): List[B] =
+    foldRightViaFoldLeft(l, Nil: List[B])((h, t) => Cons(f(h), t))
 
+  // exercise 3.19 -- removes elements from a list unless they satisfy
+  //                  a given predicate
+  def filter[A](as: List[A])(f: A => Boolean): List[A] =
+    foldRight(as, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
+  def filterViaFoldLeft[A](as: List[A])(f: A => Boolean): List[A] =
+    foldRightViaFoldLeft(as, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
 
 }
