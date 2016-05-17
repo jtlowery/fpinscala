@@ -94,14 +94,15 @@ object List { // `List` companion object. Contains functions for creating and wo
   // A: This isn't possible because foldRight must traverse the list to the end
 
   // exercise 3.8
-  // see what happens when you call Nil and Cons themselves to foldRight
+  /* see what happens when you call Nil and Cons themselves to foldRight
   // foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
   // what do you think this says about the relationship between
   // foldRight and the data constructors of the List?
   // A: Get back the original list.
   // foldRight replaces 'Nil' constructor of the list with the 'z' argument
   // which is 'Nil' in this case and replaces the 'Cons' constructor
-  // replaces the 'Cons' constructor with 'f' which is 'Cons' here
+   replaces the 'Cons' constructor with 'f' which is 'Cons' here
+   */
 
   // exercise 3.9
   def length[A](l: List[A]): Int =
@@ -181,5 +182,37 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(as, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
   def filterViaFoldLeft[A](as: List[A])(f: A => Boolean): List[A] =
     foldRightViaFoldLeft(as, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
+  def filterViaPM[A](as: List[A])(f: A => Boolean): List[A] =
+    as match {
+      case Nil => Nil
+      case Cons(h, t) => if (f(h)) Cons(h, filterViaPM(t)(f)) else filterViaPM(t)(f)
+    }
+
+  // exercise 3.20 -- like map but the given function will return a list
+  //                  instead of a single result
+  def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] =
+    concatLists(map(as)(f))
+
+  // exercise 3.21 -- flatMap to implement filter
+  def filterViaFlatMap[A](as: List[A])(f: A => Boolean): List[A] =
+    flatMap(as)(a => if (f(a)) List(a) else Nil)
+
+  // exercise 3.22 -- accepts 2 lists and constructs a new list
+  //                  by adding corresponding elements
+  def addListElements(l1: List[Int], l2: List[Int]): List[Int] =
+  (l1, l2) match {
+    case (_, Nil) => Nil
+    case (Nil, _) => Nil
+    case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, addListElements(t1, t2))
+  }
+
+  // exercise 3.23 -- generalize exercise 3.22 so it's not specific to
+  //                  integers or addition
+  def zipWith[A, B, C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] =
+    (as, bs) match {
+      case (_, Nil) => Nil
+      case (Nil, _) => Nil
+      case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+    }
 
 }
