@@ -94,7 +94,22 @@ object Stream {
     else cons(as.head, apply(as.tail: _*))
 
   val ones: Stream[Int] = Stream.cons(1, ones)
-  def from(n: Int): Stream[Int] = sys.error("todo")
 
+  // exercise 5.8 -- generalize ones for a given value
+  def constant(n: Int): Stream[Int] = Stream.cons(n, constant(n))
+
+  // exercise 5.9 -- generate an infinite stream of integers
+  //                 starting from n, then n+1, n+2, ...
+  def from(n: Int): Stream[Int] = Stream.cons(n, from(n + 1))
+
+  // exercise 5.10 -- generate infinite stream of fibonacci numbers
+  def fibs(): Stream[Int] = {
+    def go(fib0: Int, fib1: Int): Stream[Int] =
+      Stream.cons(fib0, go(fib1, fib0 + fib1))
+    go(0, 1)
+  }
+
+  // exercise 5.11 -- takes an initial state and a function for producing both
+  //                  the next state and next value in the generated stream
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
 }
