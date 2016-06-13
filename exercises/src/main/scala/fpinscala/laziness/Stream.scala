@@ -75,8 +75,69 @@ trait Stream[+A] {
   def flatMapViaFR[B>:A](f: A => Stream[B]): Stream[B] =
     foldRight(empty[B])((h, t) => f(h).appendViaFR(t))
 
-  def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
+  // exercise 5.13 -- map, take, takeWhile, zipWith, zipAll using unfold
+  def mapViaUnfold[B](f: A => B): Stream[B] =
+    unfold(this) {
+      case Cons(h, t) => Some((f(h()), t()))
+      case _ => None
+    }
+
+  def takeViaUnfold(n: Int): Stream[A] = {
+    unfold((this, n)) {
+      case (Cons(h, t), 1) => Some((h(), (empty, 0)))
+      case (Cons(h, t), n) if n > 1 => Some((h(), (t(), n - 1)))
+      case _ => None
+    }
+  }
+
+  def takeWhileViaUnfold(p: A => Boolean): Stream[A] = {
+    unfold(this) {
+      case Cons(h, t) if p(h()) => Some((h(), t()))
+      case _ => None
+    }
+  }
+
+  def zipWith[B,C](s2: Stream[B])(f: (A, B) => C): Stream[C] = {
+    unfold((this, s2)) {
+      case (Cons(h1, t1), Cons(h2, t2)) => Some((f(h1(), h2()), (t1(), t2())))
+      case _ => None
+    }
+  }
+
+  def zipWithAll[B, C](s2: Stream[B])(f: (Option[A], Option[B]) => C): Stream[C] = {
+      unfold((this, s2)) {
+        case (Empty, Empty) => None
+        case (Cons(h, t), Empty) => Some(f(Some(h()), Option.empty[B]), (t(), empty[B]))
+        case (Empty, Cons(h, t)) => Some(f(Option.empty[A], Some(h())), (empty[A], t()))
+        case (Cons(h1, t1), Cons(h2, t2)) => Some(f(Some(h1()), Some(h2())), (t1(), t2()))
+      }
+    }
+
+  def zipAll[B, C](s2: Stream[B]): Stream[(Option[A], Option[B])] = {
+      unfold((this, s2)) {
+        case (Empty, Empty) => None
+        case (Cons(h, t), Empty) => Some((Some(h()), Option.empty[B]), (t(), empty[B]))
+        case (Empty, Cons(h, t)) => Some((Option.empty[A], Some(h())), (empty[A], t()))
+        case (Cons(h1, t1), Cons(h2, t2)) => Some((Some(h1()), Some(h2())), (t1(), t2()))
+      }
+    }
+
+  // exercise 5.14 -- check if input stream is a prefix of this stream
+  def startsWith[B](s: Stream[B]): Boolean = {
+    zipAll(s).takeWhile(!_._2.isEmpty).forAll {
+      case (h1, h2) => h1 == h2
+    }
+  }
+
+  def tails: Stream[Stream[A]] = {
+    unfold(this) {
+      case Empty => None
+      case s => Some((s, s drop 1))
+    } appendViaFR Stream(empty)
+  }
+
 }
+
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
@@ -111,5 +172,27 @@ object Stream {
 
   // exercise 5.11 -- takes an initial state and a function for producing both
   //                  the next state and next value in the generated stream
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+    f(z) match {
+      case Some((h, s)) => cons(h, unfold(s)(f))
+      case None => empty
+    }
+  }
+  // exercise 5.12 -- write fibs, from, constant, and ones in terms of unfold
+  val onesViaUnfold = unfold(1)(_ => Some(1, 1))
+
+  def constantViaUnfold(n: Int): Stream[Int] = {
+    unfold(n)(_ => Some(n, n))
+  }
+
+  def fromViaUnfold(n: Int): Stream[Int] = {
+    unfold(n)(x => Some(x, x + 1))
+  }
+
+  def fibsViaUnfold(): Stream[Int] = {
+    unfold((0, 1)) {
+      case (f0, f1) => Some((f0, (f1, f0 + f1)))
+    }
+  }
+
 }
