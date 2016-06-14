@@ -59,7 +59,7 @@ trait Stream[+A] {
       else empty)
 
   // exercise 5.6 -- headOption using foldRight
-  def headOption: Option[A] = sys.error("todo")
+  def headOption: Option[A] = foldRight(None: Option[A])((h, t) => Some(h))
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
@@ -129,6 +129,8 @@ trait Stream[+A] {
     }
   }
 
+  // exercise 5.15 -- tails via unfold - returns the Stream of suffixes
+  //                  of the input sequence
   def tails: Stream[Stream[A]] = {
     unfold(this) {
       case Empty => None
@@ -136,6 +138,16 @@ trait Stream[+A] {
     } appendViaFR Stream(empty)
   }
 
+  // exercise 5.16 -- generalized tails
+  // can't be implemented using unfold since unfold generates elements
+  // left to right
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = {
+    foldRight((z, Stream(z)))((a, p0) => {
+      lazy val p1 = p0
+      val b2 = f(a, p1._1)
+      (b2, cons(b2, p1._2))
+    })._2
+  }
 }
 
 case object Empty extends Stream[Nothing]
